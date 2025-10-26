@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nakuritycore"
+version = "0.0.1"
+description = "A core utility for all projects maintained by me! (Nakurity)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Nakurity", email = "nakurity@nakashireyumi.com" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    PyYAML>=6.0.3,
+    websockets>=15.0.1,
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "black>=24.0",
+    "mypy>=1.0",
+]
+
+[project.urls]
+Homepage = "https://nakurity.com/nakuritycore"
+Repository = "https://github.com/nakurity/nakuritycore"
+Issues = "https://github.com/nakurity/nakuritycore/issues"
+
+[tool.setuptools.packages.find]
+include = ["*"]
+exclude = ["tests*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py39", "py310", "py311"]
+
+[tool.mypy]
+ignore_missing_imports = true
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+
+[tool.isort]
+profile = "black"
