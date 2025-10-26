@@ -3,7 +3,7 @@ name: Publish Python Package
 on:
   push:
     branches:
-      - master       # Publish to PyPI
+      # - master       # Publish to PyPI
       - release/*  # You can add release branches
     tags:
       - "v*"       # Publish on version tags
