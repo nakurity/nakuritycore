@@ -6,7 +6,7 @@ on:
       # - master       # Publish to PyPI
       - release/*  # You can add release branches
     tags:
-      - "v*"       # Publish on version tags
+      - "*"       # Publish on version tags
 
 jobs:
   build-and-publish:
