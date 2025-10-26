@@ -1,2 +1,6 @@
 # For obvious reasons (nakuritycore was first developed with python)
 .venv
+nakuritycore.egg-info
+
+# build stuff
+dist/
