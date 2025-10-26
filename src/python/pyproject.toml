@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nakuritycore"
-version = "0.0.2"
+version = "0.0.3"
 description = "A core utility for all projects maintained by me! (Nakurity)"
 readme = "README.md"
 license = { text = "MIT" }
