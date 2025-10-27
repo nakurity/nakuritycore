@@ -14,6 +14,7 @@ from .nakurity import NakurityRule, NakurityCustomRule, NakurityDocRule, Nakurit
 class Nakurity:
     _registry = []  # list of (obj, metadata)
     _compile_registry = []
+    _rules = []
 
     def __init__(self, logger=Logger()):
         self.tracer = Tracer(TracerConfig())
