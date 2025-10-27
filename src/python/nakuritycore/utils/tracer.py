@@ -40,8 +40,14 @@ class Tracer:
         with open(self.log_path, "a", encoding="utf-8") as f:
             f.write(line + "\n")
 
+    def _log(self, line):
+        """Write a log message to stdout and the log file."""
+        print(line)
+        self._write(self._plain(line))
+
     # Used by class: Tracer().trace()
     # For stripping ANSI codes when writing to a log file
+    @staticmethod
     def _plain(txt):
         """Strip ANSI codes for file output."""
         return re.sub(r"\x1b\[[0-9;]*m", "", txt)
