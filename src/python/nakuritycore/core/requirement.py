@@ -48,7 +48,7 @@ class NakurityRequirement:
             if obj not in registered_objs:
                 self.logging.debug(f"🚫 [NakurityRequirement] {obj.__name__} is missing Nakurity decorators.")
                 self.logging.debug("    → Use @Nakurity.expect / @Nakurity.comment / @Nakurity.require / @Nakurity.guard")
-                self.logging.debug()
+                self.logging.debug("")
                 raise Exception(f"{obj.__name__} is missing Nakurity decorators.")
 
     def _run_lint(self):
