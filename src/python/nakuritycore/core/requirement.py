@@ -1,20 +1,38 @@
 from .__main__ import Nakurity
 from types import ModuleType
+from ..utils.logging import Logger
+from ..data.config.logging import LoggingConfig
 
 import inspect
 
 # -------------------------------------------------------------------------
 #  ENFORCEMENT WRAPPER
 # -------------------------------------------------------------------------
+@Nakurity.expect("""
+Expect:
+    - takes 1 argument: x
+    - returns int
+    - should not raise exception
+""")
 class NakurityRequirement:
     """
     Enforces Nakurity discipline:
       - Every function and class in the module must have at least one @Nakurity.* decorator.
       - Automatically triggers Nakurity.lint() to validate expectations and guards.
+
+      REQUIRES:
+        - To be run after everything has been defined
     """
 
-    def __init__(self, module: ModuleType):
+    def __init__(self, module: ModuleType, output_level: str = "INFO"):
         self.module = module
+        self.output_level = output_level
+        self.logging = Logger(
+            name="NakurityRequirement",
+            config=LoggingConfig(
+                level=output_level,
+            )
+        )
         self._verify_all_decorated()
         self._run_lint()
 
@@ -22,18 +40,20 @@ class NakurityRequirement:
         defined_objs = [
             obj for _, obj in inspect.getmembers(self.module)
             if inspect.isfunction(obj) or inspect.isclass(obj)
+            and getattr(obj, "__module__", None) == self.module.__name__
         ]
         registered_objs = [entry["obj"] for entry in Nakurity._registry]
 
         for obj in defined_objs:
             if obj not in registered_objs:
-                print(f"🚫 [NakurityRequirement] {obj.__name__} is missing Nakurity decorators.")
-                print("    → Use @Nakurity.expect / @Nakurity.comment / @Nakurity.require / @Nakurity.guard")
-                print()
+                self.logging.debug(f"🚫 [NakurityRequirement] {obj.__name__} is missing Nakurity decorators.")
+                self.logging.debug("    → Use @Nakurity.expect / @Nakurity.comment / @Nakurity.require / @Nakurity.guard")
+                self.logging.debug()
+                raise Exception(f"{obj.__name__} is missing Nakurity decorators.")
 
     def _run_lint(self):
-        print("[NakurityRequirement] Running enforced lint checks...\n")
-        Nakurity().lint()
+        self.logging.debug("[NakurityRequirement] Running enforced lint checks...\n")
+        Nakurity(self.logging).lint()
 
 # -------------------------------------------------------------------------
 #  EXAMPLE USAGE
