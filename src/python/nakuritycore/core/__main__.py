@@ -8,10 +8,12 @@ from ..data.config.tracer import TracerConfig
 from ..data.config.logging import LoggingConfig
 from ..utils.tracer import Tracer
 from ..utils.logging import Logger
+from .nakurity import NakurityRule, NakurityCustomRule, NakurityDocRule, NakurityTypeRule
 
 
 class Nakurity:
     _registry = []  # list of (obj, metadata)
+    _compile_registry = []
 
     def __init__(self, logger=Logger()):
         self.tracer = Tracer(TracerConfig())
@@ -20,6 +22,20 @@ class Nakurity:
     # ------------------------------------------------------------
     #  DECORATORS
     # ------------------------------------------------------------
+    @classmethod
+    def compile(cls, text: str = None):
+        """Marks this object for compile-time validation (runs before runtime)."""
+        def decorator(obj):
+            entry = {
+                "obj": obj,
+                "expect": text.strip() if text else None,
+                "stage": "compile"
+            }
+            cls._compile_registry.append(entry)
+            cls._registry.append(entry)
+            return obj
+        return decorator
+    
     @classmethod
     def expect(cls, text: str):
         """Defines runtime expectations for a function or class."""
@@ -95,6 +111,45 @@ class Nakurity:
                 })
             return obj
         return decorator
+    
+    @classmethod
+    def _compile_pass(cls, module):
+        import inspect, ast
+
+        for entry in cls._compile_registry:
+            obj = entry["obj"]
+            try:
+                src = inspect.getsource(obj)
+                tree = ast.parse(src)
+
+                # run minimal static analysis checks
+                func_defs = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
+                if not func_defs:
+                    continue
+
+                func = func_defs[0]
+                args = [a.arg for a in func.args.args]
+                if "expected_arg_count" in entry.get("expect", ""):
+                    expected = int(entry["expect"].split("expected")[1].split()[0])
+                    if len(args) != expected:
+                        print(f"⚠️ [Nakurity.compile] {obj.__name__}: expected {expected} args, found {len(args)}")
+
+            except Exception as e:
+                print(f"💥 [Nakurity.compile] Failed to analyze {obj.__name__}: {e}")
+
+    # ------------------------------------------------------------
+    # RULE MANAGEMENT
+    # ------------------------------------------------------------
+    @classmethod
+    def register_rule(cls, rule_cls: type[NakurityRule]):
+        """Register a custom lint rule class."""
+        cls._rules.append(rule_cls())
+
+    def _register_default_rules(self):
+        """Automatically register built-in rules."""
+        self.register_rule(NakurityDocRule)
+        self.register_rule(NakurityTypeRule)
+        self.register_rule(NakurityCustomRule)
 
     # ------------------------------------------------------------
     #  MAIN LINT ENTRYPOINT
@@ -106,11 +161,23 @@ class Nakurity:
 
         for entry in Nakurity._registry:
             self._analyze_entry(entry)
+            self._run_extra_rules(entry)
 
         if self._had_warnings:
             self.logging.debug("\n⚠️  Nakurity lint completed with warnings.\n")
         else:
             self.logging.debug("\n✅ Nakurity lint completed successfully.\n")
+
+    def _run_extra_rules(self, entry):
+        obj = entry["obj"]
+        for rule in self._rules:
+            try:
+                ok = rule.check(entry, obj, self.logging)
+                if not ok:
+                    self._had_warnings = True
+            except Exception as e:
+                self._had_warnings = True
+                self.logging.debug(f"💥 Rule {rule.name} failed on {obj.__name__}: {e}")
 
     # ------------------------------------------------------------
     #  LINT HANDLERS
