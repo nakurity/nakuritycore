@@ -26,19 +26,7 @@ if not getattr(builtins, "_nakurity_import_hook_installed", False):
 
     # Prevent double-installation
 
-    def _nakurity_import(name, globals=None, locals=None, fromlist=(), level=0):
-        module = _orig_import(name, globals, locals, fromlist, level)
-
-        # Only enforce on your namespaces
-        if name.startswith("your_project.") or name.startswith("nakurity_"):
-            try:
-                Nakurity._compile_pass(module)
-            except Exception as e:
-                sys.stderr.write(f"[Nakurity] ⚠️ Compile-time checks failed for {name}: {e}\n")
-
-        return module
-
-    builtins.__import__ = [_nakurity_guarded_import, _nakurity_import]
+    builtins.__import__ = _nakurity_guarded_import
     builtins._nakurity_import_hook_installed = True
 
 __all__ = ["Nakurity", "NakurityRequirement"]
