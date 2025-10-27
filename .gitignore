@@ -1,5 +1,6 @@
 # For obvious reasons (nakuritycore was first developed with python)
 .venv
+__pycache__
 nakuritycore.egg-info
 
 # build stuff
