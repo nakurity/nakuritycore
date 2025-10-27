@@ -10,6 +10,12 @@ if not getattr(builtins, "_nakurity_import_hook_installed", False):
 
     _orig_import = builtins.__import__
 
+    @Nakurity.expect("""
+    Expect:
+        - expects 1 argument: name
+        - returns ModuleType
+        - should not raise exception
+    """)
     def _nakurity_guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
         module = _orig_import(name, globals, locals, fromlist, level)
 
