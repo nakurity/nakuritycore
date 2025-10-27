@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nakuritycore"
-version = "0.0.3"
+version = "0.0.5"
 description = "A core utility for all projects maintained by me! (Nakurity)"
 readme = "README.md"
 license = { text = "MIT" }
@@ -15,6 +15,11 @@ requires-python = ">=3.9"
 dependencies = [
     "PyYAML>=6.0.3",
     "websockets>=15.0.1",
+    "neuro_api>=2.2.1",
+    "pytesseract>=0.3.13",
+    "aiohttp>=3.13.1",
+    "pillow>=12.0.0",
+    "trio>=0.31.0",
 ]
 
 [project.optional-dependencies]
