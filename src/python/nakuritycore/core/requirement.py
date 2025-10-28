@@ -37,11 +37,27 @@ class NakurityRequirement:
         self._run_lint()
 
     def _verify_all_decorated(self):
-        defined_objs = [
-            obj for _, obj in inspect.getmembers(self.module)
-            if inspect.isfunction(obj) or inspect.isclass(obj)
-            and getattr(obj, "__module__", None) == self.module.__name__
-        ]
+        """
+        Verify that every user-defined function/class in the module has at least
+        one Nakurity decorator registered.  Skip:
+        - dunder names (internal)
+        - objects from other modules
+        - objects clearly from the typing module (e.g., NamedTuple / typing helpers)
+        """
+        defined_objs = []
+        for _, obj in inspect.getmembers(self.module):
+            # include only functions or classes AND only if defined in this module
+            if (inspect.isfunction(obj) or inspect.isclass(obj)) and getattr(obj, "__module__", None) == self.module.__name__:
+                # skip private/dunder items
+                name = getattr(obj, "__name__", None)
+                if not name or name.startswith("_"):
+                    continue
+                # skip typing internals (e.g., NamedTuple implementations brought in by typing)
+                mod = getattr(obj, "__module__", "")
+                if mod.startswith("typing") or mod.startswith("collections"):
+                    continue
+                defined_objs.append(obj)
+
         registered_objs = [entry["obj"] for entry in Nakurity._registry]
 
         for obj in defined_objs:
