@@ -1,5 +1,5 @@
 import inspect
-import typing
+import types
 from abc import ABC, abstractmethod
 
 class NakurityRule(ABC):
@@ -25,7 +25,7 @@ class NakurityDocRule(NakurityRule):
             return False
 
         # Optional: enforce docstring structure
-        if isinstance(obj, typing.FunctionType) and "Args:" not in doc and "Parameters:" not in doc:
+        if inspect.isfunction(obj) or isinstance(obj, types.FunctionType) and "Args:" not in doc and "Parameters:" not in doc:
             logger.debug(f"⚠️ {obj.__name__}: docstring missing 'Args:' section.")
         if "return" in inspect.signature(obj).parameters and "Returns:" not in doc:
             logger.debug(f"⚠️ {obj.__name__}: docstring missing 'Returns:' section.")
@@ -37,7 +37,7 @@ class NakurityTypeRule(NakurityRule):
     description = "Ensure functions and methods use consistent type annotations."
 
     def check(self, entry, obj, logger):
-        if not isinstance(obj, typing.FunctionType):
+        if inspect.isfunction(obj) or isinstance(obj, types.FunctionType):
             return True
         sig = inspect.signature(obj)
         ok = True
@@ -58,7 +58,7 @@ class NakurityCustomRule(NakurityRule):
     description = "Function names must be snake_case."
 
     def check(self, entry, obj, logger):
-        if isinstance(obj, typing.FunctionType) and not obj.__name__.islower():
+        if inspect.isfunction(obj) or isinstance(obj, types.FunctionType) and not obj.__name__.islower():
             logger.debug(f"⚠️ {obj.__name__}: name not snake_case.")
             return False
         return True

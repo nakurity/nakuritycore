@@ -5,14 +5,34 @@ import inspect
 import sys
 import time
 import tracemalloc
-import threading
 import types
-import traceback
 from typing import Any, Callable, Dict, List, Optional
 
 CompileChecker = Callable[[ast.AST, str], Optional[ast.AST]]
 RuntimeChecker = Callable[[types.FrameType, str, Any], None]
 
+from typing import Callable, Any
+
+class LoggerAdapter:
+    def __init__(self, logger: Callable[[str], None]):
+        # Accept either a callable or an object with debug/info/warn methods
+        if callable(logger):
+            self._call = logger
+            self.debug = lambda msg: self._call(msg)
+            self.info  = lambda msg: self._call(msg)
+            self.warn  = lambda msg: self._call(msg)
+        else:
+            # object with methods (e.g. logging.Logger)
+            self._call = None
+            self.debug = getattr(logger, "debug", lambda m: getattr(logger, "info", lambda s: print(s))(m))
+            self.info  = getattr(logger, "info", lambda m: self.debug(m))
+            self.warn  = getattr(logger, "warning", lambda m: self.debug(m))
+
+    def __call__(self, msg: str) -> None:
+        if self._call:
+            self._call(msg)
+        else:
+            self.info(msg)
 
 class Devy:
     """
@@ -27,9 +47,9 @@ class Devy:
     def __init__(self, compile_checker: CompileChecker = None,
                  runtime_checker: RuntimeChecker = None,
                  logger: Optional[Callable[[str], None]] = None):
-        from pyguard import PyGuard  # you can import your above code here
+        from .pyguard import PyGuard  # you can import your above code here
 
-        self.logger = logger or (lambda msg: print(msg, flush=True))
+        self.logger = LoggerAdapter(logger or (lambda s: print(s, flush=True)))
         self.guard = PyGuard(
             compile_checker=compile_checker or self._default_compile_checker,
             runtime_checker=runtime_checker or self._default_runtime_checker,

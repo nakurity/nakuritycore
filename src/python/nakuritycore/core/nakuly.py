@@ -1,12 +1,10 @@
 # nakuly.py
 from __future__ import annotations
 import inspect
-import typing
 from typing import Any, List, Dict, Optional
 
-from devy import Devy
-from nakurity import NakurityRule, NakurityDocRule, NakurityTypeRule, NakurityCustomRule
-
+from .devy import Devy
+from .nakurity import NakurityRule, NakurityDocRule, NakurityTypeRule, NakurityCustomRule
 
 class Nakuly(Devy):
     """
