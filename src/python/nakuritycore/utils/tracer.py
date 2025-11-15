@@ -148,7 +148,8 @@ class Tracer:
         return self.trace
 
     def __enter__(self):
-        sys.settrace(self.trace)
+        if self.enabled:
+            sys.settrace(self.trace)
         return self
 
     def __exit__(self):
