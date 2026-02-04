@@ -16,13 +16,13 @@ class TracerConfig(DefaultConfig):
     max_locals: int = 4
     max_stack_depth: int = 12
 
-    include_paths: List[str] = field(default_factory=lambda: ["src/dev"])
+    include_paths: List[str] = field(default_factory=lambda: ["src/"])
     exclude_functions: Set[str] = field(default_factory=lambda: {"write_log", "trace"})
     events: Set[str] = field(default_factory=lambda: {"call", "return", "exception"})
 
     # Logging
     log_dir: Path = Path("logs")
-    log_file_base: str = "neuro_os_trace.log"
+    log_file_base: str = "tracing-output"
 
     def resolve_log_path(self) -> Path:
         """Generate a timestamped log path."""
