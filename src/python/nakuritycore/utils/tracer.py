@@ -54,6 +54,8 @@ class Tracer:
 
     def trace(self, frame, event, arg):
         """Trace function calls, returns, and exceptions."""
+        if not self.enabled:
+            return self.trace
 
         # === HELPER FUNCTIONS ===
         def short(v):
